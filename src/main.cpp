@@ -24,30 +24,26 @@ void readH5Datasets(std::string fname, std::string dataset, std::vector<double> 
   DataSet dset = file.openDataSet(dataset.c_str());
   cout<<"Reading dataset "<<dataset<<endl;
 
-  // get the dataset type class
-  H5T_class_t type_class = dset.getTypeClass();
   //Get dataspace of the dataset.
   DataSpace dataspace = dset.getSpace();
   // Get the number of dimensions in the dataspace.
   int rank = dataspace.getSimpleExtentNdims();
-  // Get the dimension size of each dimension in the dataspace and display them.
-  hsize_t dims_out[1];
-  int ndims = dataspace.getSimpleExtentDims( dims_out, NULL);
-  cout << "rank " << rank << ", dimensions " <<
-          (unsigned long)(dims_out[0]) << endl;
-  cout<<"ndims :"<<ndims<<endl;
 
-  if (rank == 0){
+  if (rank == 0){ // for single value datasets
       // create a vector the same size as the dataset
       data.resize(1);
       cout<<"Vectsize: "<<data.size()<<endl;
       dset.read(data.data(), PredType::NATIVE_DOUBLE, H5S_ALL, H5S_ALL);
     }
-  else {
+  else { // for array datasets
+      // Get the dimension size of each dimension in the dataspace and display them.
+      hsize_t dims_out[1];
+      int ndims = dataspace.getSimpleExtentDims( dims_out, NULL);
+      cout << "rank " << rank << ", dimensions " <<
+              (unsigned long)(dims_out[0]) << endl;
+      cout<<"ndims :"<<ndims<<endl;
       // Define the memory dataspace
-      hsize_t dimsm[1];
-      dimsm[0] = dims_out[0];
-      DataSpace memspace (1,dimsm);
+      DataSpace memspace (1,dims_out);
 
       // create a vector the same size as the dataset
       data.resize(dims_out[0]);
@@ -56,8 +52,6 @@ void readH5Datasets(std::string fname, std::string dataset, std::vector<double> 
       // pass pointer to the array (or vector) to read function, along with the data type and space.
       dset.read(data.data(), PredType::NATIVE_DOUBLE, memspace, dataspace);
     }
-
-  cout<<data.size()<<endl;
 
   // close the HDF5 file
   file.close();
@@ -70,10 +64,7 @@ int main(){
         */
   try
   {
-    /*
-           * Turn off the auto-printing when failure occurs so that we can
-           * handle the errors appropriately
-           */
+
     std::string fname = "/home/suman/data/rpg/DSEC/zurich_city_04_a/zurich_city_04_a_events_right/events.h5";
     std::vector<double> data;
     readH5Datasets(fname, "events/t", data);
@@ -95,6 +86,7 @@ int main(){
     float t_offset = offset_data[0];
 
     cout<<"Writing to rosbag"<<endl;
+    int packet_size = 100000;
 
     // Write to rosbag
     rosbag::Bag bag;
@@ -109,7 +101,7 @@ int main(){
         ev.y = y[i];
         ev.polarity = (int)p[i];
         evQueue.events.push_back(ev);
-        if(i % 100000 == 0){
+        if(i % packet_size == 0){
             cout<<"writing msg "<<i*100./t.size()<<"%"<<endl;
             evQueue.header.stamp = ev.ts;
             evQueue.header.frame_id = i;
@@ -148,6 +140,7 @@ int main(){
   }
   catch(rosbag::BagException error){
     cout<<error.what()<<endl;
+    return -1;
   }
 
   return 0;  // successfully terminated
