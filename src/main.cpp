@@ -1,4 +1,5 @@
 #include <string>
+#include <blosc_filter.h>
 #include <hdf5/serial/hdf5.h>
 #include <hdf5/serial/H5Cpp.h>
 #include <vector>
@@ -51,6 +52,7 @@ void readH5Datasets(std::string fname, std::string dataset, std::vector<double> 
 
       // pass pointer to the array (or vector) to read function, along with the data type and space.
       dset.read(data.data(), PredType::NATIVE_DOUBLE, memspace, dataspace);
+
     }
 
   // close the HDF5 file
@@ -59,13 +61,19 @@ void readH5Datasets(std::string fname, std::string dataset, std::vector<double> 
 
 int main(){
 
+
+    char *version, *date;
+    int r = register_blosc(&version, &date);
+    printf("Blosc version info: %s (%s)\n", version, date);
+
+
   /*
         * Try block to detect exceptions raised by any of the calls inside it
         */
   try
   {
 
-    std::string fname = "/home/suman/data/rpg/DSEC/zurich_city_04_a/zurich_city_04_a_events_right/events.h5";
+    std::string fname = "/media/javi/JAVIS/datasets/dsec/zurich_city_04_a/events_left/events.h5";
     std::vector<double> data;
     readH5Datasets(fname, "events/t", data);
     std::vector<double> t(data);
@@ -90,8 +98,8 @@ int main(){
 
     // Write to rosbag
     rosbag::Bag bag;
-    std::string topic = "/dvs/right/events";
-    std::string bagname = "/home/suman/data/right_events.bag";
+    std::string topic = "/dvs/left/events";
+    std::string bagname = "/media/javi/JAVIS/datasets/dsec/zurich_city_04_a/events_left/left_events.bag";
     bag.open(bagname, rosbag::bagmode::Write);
     dvs_msgs::EventArray evQueue;
     for (int i=0; i<t.size(); i++){

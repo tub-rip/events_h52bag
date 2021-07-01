@@ -10,6 +10,9 @@ sudo apt-get install libhdf5-dev
 ```
 
 * Install the blosc filter plugin for hdf5: https://github.com/Blosc/hdf5-blosc#installing-the-blosc-filter-plugin
+* Manually install the includes files into  `/usr/local/include/blosc/`.
+* Manually install the dynamic library so file into `/usr/local/lib`
+* Optional but recommended: install package config file into `/usr/local/lib/pkgconfig`
 * Include path to your installed `dvs_msgs` header in `CMakeLists.txt`.  If not already installed, install `dvs_msgs` from https://github.com/uzh-rpg/rpg_dvs_ros in your catkin workspace.
 * Clone this repository: `git clone https://github.com/tub-rip/events_h52bag.git`
 * Check the custom paths to the `hdf5` include and library files in your `CMakeLists.txt`. Modify if needed. (TODO: Automate this step)
