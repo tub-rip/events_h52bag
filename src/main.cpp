@@ -1,5 +1,4 @@
 #include <string>
-#include <blosc_filter.h>
 #include <hdf5/serial/hdf5.h>
 #include <hdf5/serial/H5Cpp.h>
 #include <vector>
@@ -59,21 +58,20 @@ void readH5Datasets(std::string fname, std::string dataset, std::vector<double> 
   file.close();
 }
 
-int main(){
-
-
-    char *version, *date;
-    int r = register_blosc(&version, &date);
-    printf("Blosc version info: %s (%s)\n", version, date);
-
+int main(int argc, char *argv[]){
+  if (argc<=3){
+      cout<<"Too few arguments.. Exiting!\n";
+      return 0;
+    }
+  std::string fname = argv[1];
+  std::string bagname = argv[2];
+  std::string topic = argv[3];
 
   /*
         * Try block to detect exceptions raised by any of the calls inside it
         */
   try
   {
-
-    std::string fname = "/media/javi/JAVIS/datasets/dsec/zurich_city_04_a/events_left/events.h5";
     std::vector<double> data;
     readH5Datasets(fname, "events/t", data);
     std::vector<double> t(data);
@@ -98,8 +96,6 @@ int main(){
 
     // Write to rosbag
     rosbag::Bag bag;
-    std::string topic = "/dvs/left/events";
-    std::string bagname = "/media/javi/JAVIS/datasets/dsec/zurich_city_04_a/events_left/left_events.bag";
     bag.open(bagname, rosbag::bagmode::Write);
     dvs_msgs::EventArray evQueue;
     for (int i=0; i<t.size(); i++){
