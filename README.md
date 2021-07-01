@@ -1,5 +1,5 @@
 # events_h52bag
-C++ code to convert event data from HDF5 to ROSbags. Data format of h5 input file should be as in the [DSEC dataset](https://dsec.ifi.uzh.ch/). 
+C++ code to convert event data from HDF5 to ROSbags. By deafult, data format of h5 input file is expected as in the [DSEC dataset](https://dsec.ifi.uzh.ch/). The exact data structure used can be found [here](https://github.com/uzh-rpg/DSEC#events).
 
 # Installation
 * Install ROS. We need the `rosbag` and `std_msgs` packages.
@@ -9,14 +9,18 @@ sudo apt-get update
 sudo apt-get install libhdf5-dev
 ```
 
-* Install the blosc filter plugin for hdf5: https://github.com/Blosc/hdf5-blosc#installing-the-blosc-filter-plugin
-* Manually install the includes files into  `/usr/local/include/blosc/`.
-* Manually install the dynamic library so file into `/usr/local/lib`
-* Optional but recommended: install package config file into `/usr/local/lib/pkgconfig`
-* Include path to your installed `dvs_msgs` header in `CMakeLists.txt`.  If not already installed, install `dvs_msgs` from https://github.com/uzh-rpg/rpg_dvs_ros in your catkin workspace.
+* Install the [blosc filter plugin for hdf5](https://github.com/Blosc/hdf5-blosc#installing-the-blosc-filter-plugin) for read-only access across all HDF5 applications in your system:
+```
+git clone https://github.com/Blosc/hdf5-blosc.git
+cd hdf5-blosc
+mkdir build && cd build
+cmake ..
+make
+```
+* Copy the `libH5Zblosc.so` shared library generated inside the `build` folder into your local hdf5 plugin path, which is usually `/usr/local/hdf5/lib/plugin` or `/usr/lib/x86_64-linux-gnu/hdf5/plugins` depending on your Linux distro. Installation location of hdf5 can be found using `dpkg -L libhdf5-dev`.
+
+* Add path to your installed `dvs_msgs` header in line 11 of `CMakeLists.txt`.  If not already installed, install `dvs_msgs` from https://github.com/uzh-rpg/rpg_dvs_ros in your catkin workspace.
 * Clone this repository: `git clone https://github.com/tub-rip/events_h52bag.git`
-* Check the custom paths to the `hdf5` include and library files in your `CMakeLists.txt`. Modify if needed. (TODO: Automate this step)
-* Set the path of input and output files in the source code `src/main.cpp`. (TODO: Pass as runtime argument)
 * Compile this repository:
 ```
 cd events_h52bag
@@ -24,4 +28,10 @@ mkdir build && cd build
 cmake ..
 make
 ```
-* Run: `./events_h52bag`
+# Execution
+`./events_h52bag <path/to/input/h5file> <path/to/output/bagfile> <output_topic_name>`
+
+# Working example
+* Download input data from DSEC dataset: https://download.ifi.uzh.ch/rpg/DSEC/train/thun_00_a/thun_00_a_events_left.zip
+* Extract `events.h5` from zip.
+* Execute: `./events_h52bag events.h5 out.bag /dvs/left/events`
