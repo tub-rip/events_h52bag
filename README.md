@@ -1,6 +1,8 @@
 # events_h52bag
 C++ code to convert event data from HDF5 to ROSbags. By default, data format of h5 input file is expected as in the [DSEC dataset](https://dsec.ifi.uzh.ch/). The exact data structure used can be found [here](https://github.com/uzh-rpg/DSEC#events).
 
+**Author**: [Suman Ghosh](https://www.linkedin.com/in/suman-ghosh-a8762576/)
+
 # Installation
 * Install ROS. We need the `rosbag` and `std_msgs` packages.
 * Install libhdf5: 
