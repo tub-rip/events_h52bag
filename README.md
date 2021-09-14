@@ -1,5 +1,5 @@
 # events_h52bag
-C++ code to convert event data from HDF5 to ROSbags. By default, data format of h5 input file is expected as in the [DSEC dataset](https://dsec.ifi.uzh.ch/). The exact data structure used can be found [here](https://github.com/uzh-rpg/DSEC#events).
+C++ code to convert event data from HDF5 to ROSbags. By default, data format of h5 input file is expected as in the [DSEC dataset](https://dsec.ifi.uzh.ch/) or [TUM-VIE dataset](https://vision.in.tum.de/data/datasets/visual-inertial-event-dataset). The exact data structure used can be found [here](https://github.com/uzh-rpg/DSEC#events).
 
 **Author**: [Suman Ghosh](https://www.linkedin.com/in/suman-ghosh-a8762576/)
 
@@ -31,9 +31,13 @@ cmake ..
 make
 ```
 # Execution
-`./events_h52bag <path/to/input/h5file> <path/to/output/bagfile> <output_topic_name>`
+`./events_h52bag <path/to/input/h5file> <path/to/output/bagfile> <output_topic_name> <sensor_height> <sensor_width>`
 
 # Working example
 * Download input data from DSEC dataset: https://download.ifi.uzh.ch/rpg/DSEC/train/thun_00_a/thun_00_a_events_left.zip
 * Extract `events.h5` from zip.
-* Execute: `./events_h52bag events.h5 out.bag /dvs/left/events`
+* Execute: `./events_h52bag events.h5 out.bag /dvs/left/events 480 640`
+
+# Notes
+* Added feature: Sensor size can now be passed an argument
+* Added feature: Set to 0 when no `t_offset` data is present in h5 file.
