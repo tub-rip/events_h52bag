@@ -38,6 +38,5 @@ make
 * Extract `events.h5` from zip.
 * Execute: `./events_h52bag events.h5 out.bag /dvs/left/events 480 640`
 
-# Notes
-* Added feature: Sensor size can now be passed an argument
-* Added feature: Set to 0 when no `t_offset` data is present in h5 file.
+# Log
+* 14.09.21: Sensor size can now be passed an argument. Set to 0 when no `t_offset` data is present in h5 file. Tested on TUM-VIE dataset.
