@@ -22,11 +22,12 @@ void readH5Datasets(std::string fname, std::string dataset, std::vector<double> 
 
     H5File file( fname.c_str(), H5F_ACC_RDONLY );
     cout<<"Reading dataset "<<dataset<<endl;
-    if(!file.exists(dataset.c_str())){
+    if(!H5Lexists(file.getId(), dataset.c_str(), H5P_DEFAULT)){
         cout<<"Dataset does not exist.. skipping!"<<endl;
         return;
     }
-    DataSet dset = file.openDataSet(dataset.c_str());
+
+    DataSet dset= file.openDataSet(dataset.c_str());
 
     //Get dataspace of the dataset.
     DataSpace dataspace = dset.getSpace();
