@@ -38,7 +38,8 @@ To overcome memory limitations for large data files, multiple ouptut ROSBags may
 # Working example
 * Download input data from DSEC dataset: https://download.ifi.uzh.ch/rpg/DSEC/train/thun_00_a/thun_00_a_events_left.zip
 * Extract `events.h5` from zip.
-* Execute: `./events_h52bag events.h5 out.bag /dvs/left/events 480 640`
+* Execute: `./events_h52bag events.h5 out /dvs/left/events 480 640`
+* The output ROSBag `out_0.bag` is generated.
 
 # Log
 * 14.09.21: Sensor size can now be passed an argument. Set to 0 when no `t_offset` data is present in h5 file. Tested on TUM-VIE dataset.
