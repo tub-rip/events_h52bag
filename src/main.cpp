@@ -18,7 +18,7 @@ using std::endl;
 using namespace H5;
 
 
-void readH5Datasets(std::string fname, std::string dataset, std::vector<double> &data){
+void readH5Datasets(std::string fname, std::string dataset, std::vector<double> &data, int hslab_offset, int hslab_count){
 
     H5File file( fname.c_str(), H5F_ACC_RDONLY );
     cout<<"Reading dataset "<<dataset<<endl;
@@ -47,11 +47,18 @@ void readH5Datasets(std::string fname, std::string dataset, std::vector<double> 
         cout << "rank " << rank << ", dimensions " <<
                 (unsigned long)(dims_out[0]) << endl;
         cout<<"ndims :"<<ndims<<endl;
+
+        hsize_t offset[1];
+        hsize_t count[1];
+        offset[0] = hslab_offset;
+        count[0] = std::min(hslab_count, (int)dims_out[0] - hslab_offset);
+        dataspace.selectHyperslab(H5S_SELECT_SET, count, offset);
+
         // Define the memory dataspace
-        DataSpace memspace (1,dims_out);
+        DataSpace memspace (1, count);
 
         // create a vector the same size as the dataset
-        data.resize(dims_out[0]);
+        data.resize(count[0]);
         cout<<"Vectsize: "<<data.size()<<endl;
 
         // pass pointer to the array (or vector) to read function, along with the data type and space.
@@ -64,7 +71,9 @@ void readH5Datasets(std::string fname, std::string dataset, std::vector<double> 
 }
 
 int main(int argc, char *argv[]){
-    if (argc<=3){
+    int numev_per_bag = 500000000; //500M
+    int packet_size = 100000;
+    if (argc<6){
         cout<<"Too few arguments.. Exiting!\n";
         return 0;
     }
@@ -74,59 +83,74 @@ int main(int argc, char *argv[]){
     int height = std::stoi(argv[4]);
     int width = std::stoi(argv[5]);
 
+    if (argc == 7){
+        numev_per_bag = std::stoi(argv[6]);
+    }
+    if (argc == 8){
+        packet_size = std::stoi(argv[7]);
+    }
+
     /*
         * Try block to detect exceptions raised by any of the calls inside it
         */
     try
     {
-        std::vector<double> data;
-        readH5Datasets(fname, "events/t", data);
-        std::vector<double> t(data);
-        data.resize(0);
-        readH5Datasets(fname, "events/x", data);
-        std::vector<uint16_t> x(data.begin(), data.end());
-        data.resize(0);
-        readH5Datasets(fname, "events/y", data);
-        std::vector<uint16_t> y(data.begin(), data.end());
-        data.resize(0);
-        readH5Datasets(fname, "events/p", data);
-        std::vector<uint8_t> p(data.begin(), data.end());
-        data.resize(0);
-        readH5Datasets(fname, "t_offset", data);
-        std::vector<double> offset_data(data.begin(), data.end());
-        data.resize(0);
+        int hslab_offset = 0, i=0;
+        while(true){
+            std::vector<double> data;
+            readH5Datasets(fname, "events/t", data, hslab_offset, numev_per_bag);
+            std::vector<double> t(data);
+            data.resize(0);
+            readH5Datasets(fname, "events/x", data, hslab_offset, numev_per_bag);
+            std::vector<uint16_t> x(data.begin(), data.end());
+            data.resize(0);
+            readH5Datasets(fname, "events/y", data, hslab_offset, numev_per_bag);
+            std::vector<uint16_t> y(data.begin(), data.end());
+            data.resize(0);
+            readH5Datasets(fname, "events/p", data, hslab_offset, numev_per_bag);
+            std::vector<uint8_t> p(data.begin(), data.end());
+            data.resize(0);
+            readH5Datasets(fname, "t_offset", data, hslab_offset, numev_per_bag);
+            std::vector<double> offset_data(data.begin(), data.end());
+            data.resize(0);
 
-        float t_offset;
-        if (offset_data.size()>0)
-            t_offset = offset_data[0];
-        else
-            t_offset = 0;
+            float t_offset;
+            if (offset_data.size()>0)
+                t_offset = offset_data[0];
+            else
+                t_offset = 0;
 
-        cout<<"Writing to rosbag"<<endl;
-        int packet_size = 100000;
-
-        // Write to rosbag
-        rosbag::Bag bag;
-        bag.open(bagname, rosbag::bagmode::Write);
-        dvs_msgs::EventArray evQueue;
-        for (int i=0; i<t.size(); i++){
-            dvs_msgs::Event ev;
-            ev.ts.fromSec((t[i]+t_offset)/1e6);
-            ev.x = x[i];
-            ev.y = y[i];
-            ev.polarity = (int)p[i];
-            evQueue.events.push_back(ev);
-            if(i % packet_size == 0){
-                cout<<"writing msg "<<i*100./t.size()<<"%"<<endl;
-                evQueue.header.stamp = ev.ts;
-                evQueue.header.frame_id = i;
-                evQueue.height = height;
-                evQueue.width = width;
-                bag.write(topic, ev.ts, evQueue);
-                evQueue.events.clear();
+            cout<<"Writing to rosbag #"<<i<<" at offset "<<hslab_offset<<" containing "<<t.size()<<" events"<<endl;
+            // Write to rosbag
+            rosbag::Bag bag;
+            bag.open(bagname+"_"+std::to_string(i)+".bag", rosbag::bagmode::Write);
+            dvs_msgs::EventArray evQueue;
+            for (int i=0; i<t.size(); i++){
+                dvs_msgs::Event ev;
+                ev.ts.fromSec((t[i]+t_offset)/1e6);
+                ev.x = x[i];
+                ev.y = y[i];
+                ev.polarity = (int)p[i];
+                evQueue.events.push_back(ev);
+                if(i % packet_size == 0){
+                    cout<<"writing msg "<<i*100./t.size()<<"%"<<endl;
+                    evQueue.header.stamp = ev.ts;
+                    evQueue.header.frame_id = i;
+                    evQueue.height = height;
+                    evQueue.width = width;
+                    bag.write(topic, ev.ts, evQueue);
+                    evQueue.events.clear();
+                }
             }
+            bag.close();
+            if(t.size()!=numev_per_bag){
+                cout<<"Final bag file has been written."<<endl;
+                break;
+            }
+            hslab_offset+=numev_per_bag;
+            i++;
         }
-        bag.close();
+
 
     }  // end of try block
     // catch failure caused by the H5File operations
