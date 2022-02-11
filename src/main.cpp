@@ -18,7 +18,7 @@ using std::endl;
 using namespace H5;
 
 
-void readH5Datasets(std::string fname, std::string dataset, std::vector<double> &data, int hslab_offset, int hslab_count){
+void readH5Datasets(std::string fname, std::string dataset, std::vector<double> &data, hsize_t hslab_offset, hsize_t hslab_count){
 
     H5File file( fname.c_str(), H5F_ACC_RDONLY );
     cout<<"Reading dataset "<<dataset<<endl;
@@ -51,7 +51,8 @@ void readH5Datasets(std::string fname, std::string dataset, std::vector<double> 
         hsize_t offset[1];
         hsize_t count[1];
         offset[0] = hslab_offset;
-        count[0] = std::min(hslab_count, (int)dims_out[0] - hslab_offset);
+        count[0] = std::min(hslab_count, dims_out[0] - hslab_offset);
+        cout<<"count: "<< count[0]<<" "<<offset[0]<<endl;
         dataspace.selectHyperslab(H5S_SELECT_SET, count, offset);
 
         // Define the memory dataspace
@@ -95,7 +96,8 @@ int main(int argc, char *argv[]){
         */
     try
     {
-        int hslab_offset = 0, i=0;
+        hsize_t hslab_offset = 0;
+        int i=0;
         while(true){
             std::vector<double> data;
             readH5Datasets(fname, "events/t", data, hslab_offset, numev_per_bag);
@@ -133,7 +135,7 @@ int main(int argc, char *argv[]){
                 ev.polarity = (int)p[i];
                 evQueue.events.push_back(ev);
                 if(i % packet_size == 0){
-                    cout<<"writing msg "<<i*100./t.size()<<"%"<<endl;
+//                    cout<<"writing msg "<<i*100./t.size()<<"%"<<endl;
                     evQueue.header.stamp = ev.ts;
                     evQueue.header.frame_id = i;
                     evQueue.height = height;
