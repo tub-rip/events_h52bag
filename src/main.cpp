@@ -73,7 +73,8 @@ void readH5Datasets(std::string fname, std::string dataset, std::vector<double> 
 
 int main(int argc, char *argv[]){
     int numev_per_bag = 500000000; //500M
-    int packet_size = 100000;
+    int packet_size = 100000;    
+    std::string dataset_prefix = "events";
     if (argc<6){
         cout<<"Too few arguments.. Exiting!\n";
         return 0;
@@ -90,8 +91,12 @@ int main(int argc, char *argv[]){
     if (argc == 8){
         packet_size = std::stoi(argv[7]);
     }
+    if (argc == 9){
+        dataset_prefix = argv[8];
+    }
 
     /*
+        std::string dataset_prefix = "prophesee/right";
         * Try block to detect exceptions raised by any of the calls inside it
         */
     try
@@ -100,16 +105,16 @@ int main(int argc, char *argv[]){
         int i=0;
         while(true){
             std::vector<double> data;
-            readH5Datasets(fname, "events/t", data, hslab_offset, numev_per_bag);
+            readH5Datasets(fname, dataset_prefix + "/t", data, hslab_offset, numev_per_bag);
             std::vector<double> t(data);
             data.resize(0);
-            readH5Datasets(fname, "events/x", data, hslab_offset, numev_per_bag);
+            readH5Datasets(fname, dataset_prefix + "/x", data, hslab_offset, numev_per_bag);
             std::vector<uint16_t> x(data.begin(), data.end());
             data.resize(0);
-            readH5Datasets(fname, "events/y", data, hslab_offset, numev_per_bag);
+            readH5Datasets(fname, dataset_prefix + "/y", data, hslab_offset, numev_per_bag);
             std::vector<uint16_t> y(data.begin(), data.end());
             data.resize(0);
-            readH5Datasets(fname, "events/p", data, hslab_offset, numev_per_bag);
+            readH5Datasets(fname, dataset_prefix + "/p", data, hslab_offset, numev_per_bag);
             std::vector<uint8_t> p(data.begin(), data.end());
             data.resize(0);
             readH5Datasets(fname, "t_offset", data, hslab_offset, numev_per_bag);
