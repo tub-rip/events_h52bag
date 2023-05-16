@@ -21,7 +21,14 @@ make
 ```
 * Copy the `libH5Zblosc.so` shared library generated inside the `build` folder into your local hdf5 plugin path, which is usually `/usr/local/hdf5/lib/plugin` or `/usr/lib/x86_64-linux-gnu/hdf5/plugins` depending on your Linux distro. Installation location of hdf5 can be found using `dpkg -L libhdf5-dev`. Create the `plugins` directory if it does not exist already in your system.
 
-* Optional: For M3ED dataset, [lzf filter plugin](https://github.com/h5py/h5py/tree/master/lzf) needs to be built as a shared library and copied into the plugin path as for the blosc filter above.
+* Optional: For M3ED dataset, [lzf filter plugin](https://github.com/h5py/h5py/tree/master/lzf) needs to be built as a shared library.
+
+```
+git clone git@github.com:h5py/h5py.git
+cd h5py/lzf
+gcc -O2 -fPIC -shared lzf/*.c lzf_filter.c -o liblzf_filter.so
+```
+Then copy the library file `liblzf_filter.so` into the same HDF5 plugin path, as was done for the blosc filter above.
 
 * Add path to your installed `dvs_msgs` header in line 11 of `CMakeLists.txt`.  If not already installed, install `dvs_msgs` from https://github.com/uzh-rpg/rpg_dvs_ros in your catkin workspace.
 * Clone this repository: `git clone https://github.com/tub-rip/events_h52bag.git`
