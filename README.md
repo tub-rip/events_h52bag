@@ -50,6 +50,6 @@ To overcome memory limitations for large data files, multiple ouptut ROSBags may
 * The output ROSBag `out_0.bag` is generated.
 
 # Log
-* 16.05.21: Now supports [M3ED dataset](https://m3ed.io/). Dataset prefix can now be passed as an argument, which is `prophesee/left` and `prophesee/right` for M3ED h5 files. 
+* 16.05.23: Now supports [M3ED dataset](https://m3ed.io/). Dataset prefix can now be passed as an argument, which is `prophesee/left` and `prophesee/right` for M3ED h5 files. 
 * 14.09.21: Sensor size can now be passed an argument. Set to 0 when no `t_offset` data is present in h5 file. Tested on TUM-VIE dataset.
 * 07.02.21: Optional argument `events_per_bag` can be used to generate multiple rosbags while converting from a single h5 file. Optional argument `event_packet_size` can be passed to modify ROS message rate.
