@@ -21,6 +21,11 @@ make
 ```
 * Copy the `libH5Zblosc.so` shared library generated inside the `build` folder into your local hdf5 plugin path, which is usually `/usr/local/hdf5/lib/plugin` or `/usr/lib/x86_64-linux-gnu/hdf5/plugins` depending on your Linux distro. Installation location of hdf5 can be found using `dpkg -L libhdf5-dev`. Create the `plugins` directory if it does not exist already in your system.
 
+Then, add the following line to your `~/.bashrc` and source it
+```
+export HDF5_PLUGIN_PATH=<path to plugins>
+```
+
 * Optional: For M3ED dataset, [lzf filter plugin](https://github.com/h5py/h5py/tree/master/lzf) needs to be built as a shared library. Then copy the library file `liblzf_filter.so` into the same HDF5 plugin path, as was done for the blosc filter above.
 ```
 git clone git@github.com:h5py/h5py.git
