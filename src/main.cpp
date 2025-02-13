@@ -119,7 +119,7 @@ int main(int argc, char *argv[]){
             std::vector<uint64_t> offset_data(data.begin(), data.end());
             std::vector<uint64_t>().swap(data); //clearing memory
 
-            float t_offset;
+            uint64_t t_offset;
             if (offset_data.size()>0)
                 t_offset = offset_data[0];
             else
@@ -131,7 +131,7 @@ int main(int argc, char *argv[]){
             dvs_msgs::EventArray evQueue;
             for (int j=0; j<t.size(); j++){
                 dvs_msgs::Event ev;
-                ev.ts.fromSec((t[j]+t_offset)/1e6);
+                ev.ts.fromSec(double(t[j]+t_offset)/1e6);
                 ev.x = x[j];
                 ev.y = y[j];
                 ev.polarity = (int)p[j];
